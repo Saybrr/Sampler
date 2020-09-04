@@ -22,10 +22,21 @@ JunebugSamplerAudioProcessor::JunebugSamplerAudioProcessor()
                        )
 #endif
 {
+    //Constructor for the sampler class
+    formatManager.registerBasicFormats();
+
+    for (int i = 0; i < numVoices; i++)
+    {
+        //we create numVoices voices 
+        sampler.addVoice(new juce::SamplerVoice());
+    }
 }
 
 JunebugSamplerAudioProcessor::~JunebugSamplerAudioProcessor()
 {
+    //destructor 
+    formatReader = nullptr;
+
 }
 
 //==============================================================================
@@ -95,6 +106,7 @@ void JunebugSamplerAudioProcessor::prepareToPlay (double sampleRate, int samples
 {
     // Use this method as the place to do any pre-playback
     // initialisation that you need..
+    sampler.setCurrentPlaybackSampleRate(sampleRate);
 }
 
 void JunebugSamplerAudioProcessor::releaseResources()
@@ -133,27 +145,19 @@ void JunebugSamplerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffe
     auto totalNumInputChannels  = getTotalNumInputChannels();
     auto totalNumOutputChannels = getTotalNumOutputChannels();
 
-    // In case we have more outputs than inputs, this code clears any output
-    // channels that didn't contain input data, (because these aren't
-    // guaranteed to be empty - they may contain garbage).
-    // This is here to avoid people getting screaming feedback
-    // when they first compile a plugin, but obviously you don't need to keep
-    // this code if your algorithm always overwrites all the output channels.
+  
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
 
-    // This is the place where you'd normally do the guts of your plugin's
-    // audio processing...
-    // Make sure to reset the state if your inner loop is processing
-    // the samples and the outer loop is handling the channels.
-    // Alternatively, you can process the samples with the channels
-    // interleaved by keeping the same state.
-    for (int channel = 0; channel < totalNumInputChannels; ++channel)
-    {
-        auto* channelData = buffer.getWritePointer (channel);
+    sampler.renderNextBlock(buffer, midiMessages, 0, buffer.getNumSamples());
 
-        // ..do something to the data...
-    }
+//    
+//    for (int channel = 0; channel < totalNumInputChannels; ++channel)
+//    {
+//        auto* channelData = buffer.getWritePointer (channel);
+//
+//        // ..do something to the data...
+//    }
 }
 
 //==============================================================================
@@ -180,6 +184,53 @@ void JunebugSamplerAudioProcessor::setStateInformation (const void* data, int si
     // You should use this method to restore your parameters from this memory block,
     // whose contents will have been created by the getStateInformation() call.
 }
+
+void JunebugSamplerAudioProcessor::loadFile()
+{
+    //uses a system Explorer GUI to select file(s)
+    sampler.clearSounds();
+    juce::FileChooser chooser{ "Please Select a Sample"};
+    juce::BigInteger range;
+    range.setRange(0, 128, true);
+
+    if (chooser.browseForFileToOpen())
+    {
+        auto file = chooser.getResult();
+        formatReader = formatManager.createReaderFor(file);
+        sampler.addSound(new juce::SamplerSound("Sample", *formatReader, range, 60, 0.1, 0.1, 10.0));
+    }    
+}
+
+void JunebugSamplerAudioProcessor::loadFile(const juce::String& path)
+{
+    //called when using the drag and drop method where a path to a file has been 
+    //already supplied by user
+    sampler.clearSounds();
+    juce::BigInteger range;
+    range.setRange(0, 128, true);
+
+    auto file = juce::File(path);
+    formatReader = formatManager.createReaderFor(file);
+
+    //need to set size of buffer before writing to it
+    auto numSamples = static_cast<int>(formatReader->lengthInSamples);
+    waveForm.setSize(2, numSamples);
+    formatReader->read(&waveForm, 0,numSamples,0, true, true);
+
+    //iterate through the audio buffer via a pointer
+    auto buffer = waveForm.getReadPointer(0);
+
+
+    //for (int sample = 0; sample < waveForm.getNumSamples(); sample++)
+    //{
+    //    //print out the float value (amplitude) at a given sample
+    //    DBG(buffer[sample]);
+    //}
+
+
+    sampler.addSound(new juce::SamplerSound("Sample", *formatReader, range, 60, 0.1, 0.1, 10.0));
+}
+
 
 //==============================================================================
 // This creates new instances of the plugin..

@@ -53,7 +53,29 @@ public:
     void getStateInformation (juce::MemoryBlock& destData) override;
     void setStateInformation (const void* data, int sizeInBytes) override;
 
+    
+    void loadFile();
+    void loadFile(const juce::String& path);
+
+    juce::StringArray& samplenames { juce::StringArray() };
+
+    int getNumSamplerSounds() { return sampler.getNumSounds(); }
+
+    //Accessor method for our private audio buffer
+    juce::AudioBuffer<float>& getWaveForm() { return waveForm; }
+
 private:
+    juce::Synthesiser sampler;
+    const int numVoices{ 3 };
+
+    //buffer we use to draw a visual representation of our sample
+    //TODO: use this for amplitude splicing? 
+    juce::AudioBuffer<float> waveForm;
+
+    juce::AudioFormatManager formatManager;
+    //each file gets its own reader, so we want to just store a pointer
+    //to the appropriate reader instead 
+    juce::AudioFormatReader* formatReader{ nullptr }; 
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (JunebugSamplerAudioProcessor)
 };
