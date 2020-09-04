@@ -18,6 +18,26 @@ JunebugSamplerAudioProcessorEditor::JunebugSamplerAudioProcessorEditor (JunebugS
     loadButton.onClick = [&]() {audioProcessor.loadFile(); };
     addAndMakeVisible(loadButton);
     setSize(600, 200);
+
+    attackSlider.setSliderStyle(juce::Slider::SliderStyle::RotaryHorizontalVerticalDrag);
+    attackSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 40, 20);
+    attackSlider.setRange(0.0f, 5.0f,0.01f);
+    addAndMakeVisible(attackSlider);
+
+    decaySlider.setSliderStyle(juce::Slider::SliderStyle::RotaryHorizontalVerticalDrag);
+    decaySlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 40, 20);
+    decaySlider.setRange(0.0f, 5.0f, 0.01f);
+    addAndMakeVisible(decaySlider);
+
+    sustainSlider.setSliderStyle(juce::Slider::SliderStyle::RotaryHorizontalVerticalDrag);
+    sustainSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 40, 20);
+    sustainSlider.setRange(0.0f, 5.0f, 0.01f);
+    addAndMakeVisible(sustainSlider);
+
+    releaseSlider.setSliderStyle(juce::Slider::SliderStyle::RotaryHorizontalVerticalDrag);
+    releaseSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 40, 20);
+    releaseSlider.setRange(0.0f, 5.0f, 0.01f);
+    addAndMakeVisible(releaseSlider);
 }
 
 JunebugSamplerAudioProcessorEditor::~JunebugSamplerAudioProcessorEditor()
@@ -108,6 +128,11 @@ void JunebugSamplerAudioProcessorEditor::resized()
     // This is generally where you'll want to lay out the positions of any
     // subcomponents in your editor..
     //loadButton.setBounds(getWidth() / 2 - 50, getHeight() / 2 - 50, 100, 100);
+    
+    attackSlider.setBoundsRelative(0.5f,0.5f,0.1f,0.4f);
+    decaySlider.setBoundsRelative(0.55f, 0.5f, 0.1f, 0.4f);
+    sustainSlider.setBoundsRelative(0.6f, 0.5f, 0.1f, 0.4f);
+    releaseSlider.setBoundsRelative(0.65f, 0.5f, 0.1f, 0.4f);
 }
 
 bool JunebugSamplerAudioProcessorEditor::isInterestedInFileDrag(const juce::StringArray& files)

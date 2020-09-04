@@ -37,5 +37,9 @@ private:
 
     std::vector<float> drawPoints; 
 
+    //Sliders for ADSR
+    juce::Slider attackSlider, decaySlider, sustainSlider, releaseSlider;
+     
+
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (JunebugSamplerAudioProcessorEditor)
 };
