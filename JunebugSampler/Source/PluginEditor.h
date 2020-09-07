@@ -10,12 +10,12 @@
 
 #include <JuceHeader.h>
 #include "PluginProcessor.h"
-
+#include "WaveThumbnail.h"
 //==============================================================================
 /**
 */
-class JunebugSamplerAudioProcessorEditor : public juce::AudioProcessorEditor, 
-                                           public juce::FileDragAndDropTarget
+class JunebugSamplerAudioProcessorEditor : public juce::AudioProcessorEditor 
+                                     
                                            //public juce::Slider::Listener
 {
 public:
@@ -27,8 +27,8 @@ public:
     void resized() override;
 
     //FileDragAndDropTarget 
-    bool isInterestedInFileDrag(const juce::StringArray& files) override;
-    void filesDropped(const juce::StringArray& files, int x, int y) override;
+  /*  bool isInterestedInFileDrag(const juce::StringArray& files) override;
+    void filesDropped(const juce::StringArray& files, int x, int y) override;*/
 
     //pure virtual from Slider Listener *DEPRECATED -- USING VALUE TREE STATE INSTEAD*
     //void sliderValueChanged(juce::Slider* slider) override;
@@ -38,9 +38,8 @@ private:
     // This reference is provided as a quick way for your editor to
     // access the processor object that created it.
     JunebugSamplerAudioProcessor& audioProcessor;
-    bool needRepaint{ false };
 
-    std::vector<float> drawPoints;
+    WaveThumbnail waveThumb;
 
     //Sliders for ADSR
     juce::Slider attackSlider, decaySlider, sustainSlider, releaseSlider;

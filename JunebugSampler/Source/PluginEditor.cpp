@@ -9,9 +9,10 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
 
+
 //==============================================================================
 JunebugSamplerAudioProcessorEditor::JunebugSamplerAudioProcessorEditor (JunebugSamplerAudioProcessor& p)
-    : AudioProcessorEditor (&p), audioProcessor (p)
+    : AudioProcessorEditor (&p), audioProcessor (p), waveThumb(p)
 {
     // Make sure that before the constructor has finished, you've set the
     // editor's size to whatever you need it to be.
@@ -82,6 +83,8 @@ JunebugSamplerAudioProcessorEditor::JunebugSamplerAudioProcessorEditor (JunebugS
     releaseLabel.setJustificationType(juce::Justification::centredTop);
     releaseLabel.attachToComponent(&releaseSlider, false);
     //-----------------------------------------------------------------
+    //---------------------WAVE THUMBNAIL-----------------------------
+    addAndMakeVisible(waveThumb);
 
     setSize(600, 400);
 }
@@ -100,40 +103,6 @@ void JunebugSamplerAudioProcessorEditor::paint (juce::Graphics& g)
         //use jmap to scale on y axis: [-1,1] to [getHeight(),0]
         //
     
-    if (needRepaint) {
-        //our Path object used to draw the waveform
-        juce::Path p;
-        drawPoints.clear();
-        //we must scale the drawing of the waveform to our width and height of the window:
-        //waveform should take up top half of window
-        //each sample should be drawn with the width of sampleLength/getWidth() -- maybe do this later to allow for zooming?
-        //for now, we "downsample" by the scaleFactor and only draw every sample s.t. sample%scaleFactor == 0
-
-        auto waveForm = audioProcessor.getWaveForm();
-        auto scaleFactor = waveForm.getNumSamples() / getWidth();
-
-        auto buffer = waveForm.getReadPointer(0);
-
-        for (int sample = 0; sample < waveForm.getNumSamples(); sample += scaleFactor)
-        {
-            //only stretch the points we want to draw - 
-            auto scaled = juce::jmap<float>(buffer[sample], -1.0f, 1.0f, static_cast<float>(getHeight()/2), 0.0f);
-            drawPoints.push_back(scaled);
-        }
-
-        p.startNewSubPath(0, (getHeight()  / 2) - getHeight()/4);
-
-        for (int sample = 0; sample < drawPoints.size(); sample++)
-        {
-            //create a line using several X,Y points 
-            //does not draw it! 
-            p.lineTo(sample, drawPoints[sample]);
-        }
-
-        //draws the path described above
-        g.strokePath(p, juce::PathStrokeType(2));
-    }
-    needRepaint = false;
     //juce::jmap(waveForm, 0, getHeight());
 
     if (audioProcessor.getNumSamplerSounds() > 0)
@@ -172,9 +141,8 @@ void JunebugSamplerAudioProcessorEditor::paint (juce::Graphics& g)
 
 void JunebugSamplerAudioProcessorEditor::resized()
 {
-    // This is generally where you'll want to lay out the positions of any
-    // subcomponents in your editor..
-    //loadButton.setBounds(getWidth() / 2 - 50, getHeight() / 2 - 50, 100, 100);
+    waveThumb.setBoundsRelative(0.0f, 0.25f, 1.0f, 0.5f);
+
     const auto startX = 0.6;
     const auto xOff = 0.1f;
     const auto startY = 0.8f;
@@ -187,39 +155,7 @@ void JunebugSamplerAudioProcessorEditor::resized()
     releaseSlider.setBoundsRelative(startX + 3 * xOff, startY, width, height);
 }
 
-bool JunebugSamplerAudioProcessorEditor::isInterestedInFileDrag(const juce::StringArray& files)
-{
-    //we need to check if all files in array are valid audio file to sample
-    bool valid = true;
-    for (auto file: files)
-    {
-        if (!(file.contains(".wav") || file.contains(".mp3") || file.contains(".aif") || file.contains(".flac")))
-        {
-            valid = false;
-        }
-    }
-    return valid;
-}
 
-
-void JunebugSamplerAudioProcessorEditor::filesDropped(const juce::StringArray& files, int x, int y)
-{
-    for (auto file : files)
-    {
-        if (isInterestedInFileDrag(files))
-        {
-            //load the file from an absolute path
-            needRepaint = true;
-            audioProcessor.loadFile(file);
-            
-
-        }
-        
-    }
-    audioProcessor.samplenames = files;
-    repaint();
-
-}
 
 //void JunebugSamplerAudioProcessorEditor::sliderValueChanged(juce::Slider* slider)
 //{

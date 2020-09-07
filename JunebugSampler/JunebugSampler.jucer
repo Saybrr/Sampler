@@ -5,6 +5,13 @@
               pluginCharacteristicsValue="pluginIsSynth,pluginProducesMidiOut,pluginWantsMidiIn">
   <MAINGROUP id="R84SSy" name="JunebugSampler">
     <GROUP id="{18EAA022-1B77-B06A-FC61-69A881510C2F}" name="Source">
+      <FILE id="Lw82sT" name="EnvelopeComponent.h" compile="0" resource="0"
+            file="Source/EnvelopeComponent.h"/>
+      <FILE id="Y81Mfp" name="EnvelopeComponent.cpp" compile="1" resource="0"
+            file="Source/EnvelopeComponent.cpp"/>
+      <FILE id="E4xn9U" name="WaveThumbnail.cpp" compile="1" resource="0"
+            file="Source/WaveThumbnail.cpp"/>
+      <FILE id="iiZ1P2" name="WaveThumbnail.h" compile="0" resource="0" file="Source/WaveThumbnail.h"/>
       <FILE id="T5Hvf2" name="PluginProcessor.cpp" compile="1" resource="0"
             file="Source/PluginProcessor.cpp"/>
       <FILE id="zaJesZ" name="PluginProcessor.h" compile="0" resource="0"
