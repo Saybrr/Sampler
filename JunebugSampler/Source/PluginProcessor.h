@@ -13,7 +13,8 @@
 //==============================================================================
 /**
 */
-class JunebugSamplerAudioProcessor  : public juce::AudioProcessor
+class JunebugSamplerAudioProcessor : public juce::AudioProcessor,
+                                     public juce ::ValueTree::Listener
 {
 public:
     //==============================================================================
@@ -57,16 +58,26 @@ public:
     void loadFile();
     void loadFile(const juce::String& path);
 
-    juce::StringArray& samplenames { juce::StringArray() };
+    juce::StringArray samplenames{ juce::StringArray() };
 
     int getNumSamplerSounds() { return sampler.getNumSounds(); }
 
     //Accessor method for our private audio buffer
     juce::AudioBuffer<float>& getWaveForm() { return waveForm; }
 
+    //ADSR Envelope
+    void updateADSR();
+    juce::ADSR::Parameters& getADSRParams() { return adsrParams; }
+    
+    
+    juce::AudioProcessorValueTreeState& getAPVTS() { return myAPVST; }
+
+
 private:
     juce::Synthesiser sampler;
     const int numVoices{ 3 };
+
+    juce::ADSR::Parameters adsrParams; 
 
     //buffer we use to draw a visual representation of our sample
     //TODO: use this for amplitude splicing? 
@@ -76,6 +87,15 @@ private:
     //each file gets its own reader, so we want to just store a pointer
     //to the appropriate reader instead 
     juce::AudioFormatReader* formatReader{ nullptr }; 
+
+    juce::AudioProcessorValueTreeState myAPVST;
+
+    juce::AudioProcessorValueTreeState::ParameterLayout createParameters();
+
+    void valueTreePropertyChanged(juce::ValueTree& treeWhosePropertyHasChanged, const juce::Identifier& property);
+
+    std::atomic<bool> shouldUpdate{ false };
+   
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (JunebugSamplerAudioProcessor)
 };

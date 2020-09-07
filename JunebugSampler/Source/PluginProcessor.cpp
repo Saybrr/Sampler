@@ -19,11 +19,12 @@ JunebugSamplerAudioProcessor::JunebugSamplerAudioProcessor()
                       #endif
                        .withOutput ("Output", juce::AudioChannelSet::stereo(), true)
                      #endif
-                       )
+                       ), myAPVST(*this,nullptr, "PARAMETERS", createParameters())
 #endif
 {
     //Constructor for the sampler class
     formatManager.registerBasicFormats();
+    myAPVST.state.addListener(this);
 
     for (int i = 0; i < numVoices; i++)
     {
@@ -145,9 +146,13 @@ void JunebugSamplerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffe
     auto totalNumInputChannels  = getTotalNumInputChannels();
     auto totalNumOutputChannels = getTotalNumOutputChannels();
 
-  
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
+    if (shouldUpdate)
+    {
+        updateADSR();
+    }
+    
 
     sampler.renderNextBlock(buffer, midiMessages, 0, buffer.getNumSamples());
 
@@ -229,6 +234,49 @@ void JunebugSamplerAudioProcessor::loadFile(const juce::String& path)
 
 
     sampler.addSound(new juce::SamplerSound("Sample", *formatReader, range, 60, 0.1, 0.1, 10.0));
+}
+
+void JunebugSamplerAudioProcessor::updateADSR()
+{
+    //read the params from the ValueTree
+    adsrParams.attack = myAPVST.getRawParameterValue("ATTACK")->load();
+    adsrParams.decay = myAPVST.getRawParameterValue("DECAY")->load();
+    adsrParams.sustain = myAPVST.getRawParameterValue("SUSTAIN")->load();
+    adsrParams.release = myAPVST.getRawParameterValue("RELEASE")->load();
+
+    //theres a built in ADSR object in SamplerSounds! How do we access it to write to it? 
+    //iterate through the sounds of our Synthesiser (the samples we want to play) 
+    //then build / write ADSR envelopes to the SamplerSound objects using setEnvelopeParameters
+    for (int i = 0; i < sampler.getNumSounds(); i++)
+    {
+        //need to validate that a given sound is a SamplerSound (not SynthesiserSound)
+        auto sound = dynamic_cast<juce::SamplerSound*>(sampler.getSound(i).get());
+        if (sound)
+        {
+            //SamplerSound.setEnvelopeParameters
+            //apply params set by sliders in Editor.sliderValueChanged(1)
+            sound->setEnvelopeParameters(adsrParams);
+        }
+
+    }
+    //DBG(attack << decay << sustain << release);
+}
+
+juce::AudioProcessorValueTreeState::ParameterLayout JunebugSamplerAudioProcessor::createParameters()
+{
+    //creates the parameters for our ValueTree, so far it is ADSR that we want to read from sliders
+    std::vector<std::unique_ptr<juce::RangedAudioParameter>> parameters;
+    parameters.push_back(std::make_unique<juce::AudioParameterFloat>("ATTACK", "Attack", 0.0f, 5.0f, 0.0f));
+    parameters.push_back(std::make_unique<juce::AudioParameterFloat>("DECAY", "Decay", 0.0f, 5.0f, 2.0f));
+    parameters.push_back(std::make_unique<juce::AudioParameterFloat>("SUSTAIN", "Sustain", 0.0f, 1.0f, 1.0f));
+    parameters.push_back(std::make_unique<juce::AudioParameterFloat>("RELEASE", "Release", 0.0f, 5.0f, 2.0f));
+    return { parameters.begin(), parameters.end() };
+}
+
+void JunebugSamplerAudioProcessor::valueTreePropertyChanged(juce::ValueTree& treeWhosePropertyHasChanged, const juce::Identifier& property)
+{
+    //called when something is changed in the value tree 
+    shouldUpdate = true;
 }
 
 

@@ -17,27 +17,73 @@ JunebugSamplerAudioProcessorEditor::JunebugSamplerAudioProcessorEditor (JunebugS
     // editor's size to whatever you need it to be.
     loadButton.onClick = [&]() {audioProcessor.loadFile(); };
     addAndMakeVisible(loadButton);
-    setSize(600, 200);
-
-    attackSlider.setSliderStyle(juce::Slider::SliderStyle::RotaryHorizontalVerticalDrag);
+    
+    //----------------SLIDERS AND LABELS------------------------------------
+    //atk slider
+    attackSlider.setSliderStyle(juce::Slider::SliderStyle::RotaryVerticalDrag);
     attackSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 40, 20);
-    attackSlider.setRange(0.0f, 5.0f,0.01f);
+    attackSlider.setColour(juce::Slider::ColourIds::thumbColourId, juce::Colours::orange);
     addAndMakeVisible(attackSlider);
+    //attackSlider.setRange(0.0f, 5.0f,0.01f);
+    //attackSlider.addListener(this);
+    attackAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>
+                                         (audioProcessor.getAPVTS(), "ATTACK", attackSlider); 
+    //atk label
+    attackLabel.setFont(10.0f);
+    attackLabel.setText("Attack", juce::NotificationType::dontSendNotification);
+    attackLabel.setJustificationType(juce::Justification::centredTop);
+    attackLabel.attachToComponent(&attackSlider,false);
 
-    decaySlider.setSliderStyle(juce::Slider::SliderStyle::RotaryHorizontalVerticalDrag);
+    //dec slider
+    decaySlider.setSliderStyle(juce::Slider::SliderStyle::RotaryVerticalDrag);
     decaySlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 40, 20);
-    decaySlider.setRange(0.0f, 5.0f, 0.01f);
+    decaySlider.setColour(juce::Slider::ColourIds::thumbColourId, juce::Colours::orange);
     addAndMakeVisible(decaySlider);
+    //decaySlider.setRange(0.0f, 5.0f, 0.01f);
+    //decaySlider.addListener(this);
+    decayAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>
+                                          (audioProcessor.getAPVTS(), "DECAY", decaySlider);
+    //dec label
+    decayLabel.setFont(10.0f);
+    decayLabel.setText("Decay",juce::NotificationType::dontSendNotification);
+    decayLabel.setJustificationType(juce::Justification::centredTop);
+    decayLabel.attachToComponent(&decaySlider, false);
 
-    sustainSlider.setSliderStyle(juce::Slider::SliderStyle::RotaryHorizontalVerticalDrag);
+    //sus slider
+    sustainSlider.setSliderStyle(juce::Slider::SliderStyle::RotaryVerticalDrag);
     sustainSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 40, 20);
-    sustainSlider.setRange(0.0f, 5.0f, 0.01f);
+    sustainSlider.setColour(juce::Slider::ColourIds::thumbColourId, juce::Colours::orange);
     addAndMakeVisible(sustainSlider);
+    //sustainSlider.addListener(this);
+    //sustainSlider.setRange(0.0f, 1.0f, 0.01f);
 
-    releaseSlider.setSliderStyle(juce::Slider::SliderStyle::RotaryHorizontalVerticalDrag);
+    sustainAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>
+                                        (audioProcessor.getAPVTS(), "SUSTAIN", sustainSlider);
+    //sus label
+    sustainLabel.setFont(10.0f);
+    sustainLabel.setText("Sustain", juce::NotificationType::dontSendNotification);
+    sustainLabel.setJustificationType(juce::Justification::centredTop);
+    sustainLabel.attachToComponent(&sustainSlider, false);
+
+
+    //rel slider
+    releaseSlider.setSliderStyle(juce::Slider::SliderStyle::RotaryVerticalDrag);
     releaseSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 40, 20);
-    releaseSlider.setRange(0.0f, 5.0f, 0.01f);
+    releaseSlider.setColour(juce::Slider::ColourIds::thumbColourId, juce::Colours::orange);
     addAndMakeVisible(releaseSlider);
+    //releaseSlider.addListener(this);
+    //releaseSlider.setRange(0.0f, 1.0f, 0.01f);
+
+    releaseAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>
+                                          (audioProcessor.getAPVTS(), "RELEASE", releaseSlider);
+    //rel label
+    releaseLabel.setFont(10.0f);
+    releaseLabel.setText("Release", juce::NotificationType::dontSendNotification);
+    releaseLabel.setJustificationType(juce::Justification::centredTop);
+    releaseLabel.attachToComponent(&releaseSlider, false);
+    //-----------------------------------------------------------------
+
+    setSize(600, 400);
 }
 
 JunebugSamplerAudioProcessorEditor::~JunebugSamplerAudioProcessorEditor()
@@ -59,6 +105,7 @@ void JunebugSamplerAudioProcessorEditor::paint (juce::Graphics& g)
         juce::Path p;
         drawPoints.clear();
         //we must scale the drawing of the waveform to our width and height of the window:
+        //waveform should take up top half of window
         //each sample should be drawn with the width of sampleLength/getWidth() -- maybe do this later to allow for zooming?
         //for now, we "downsample" by the scaleFactor and only draw every sample s.t. sample%scaleFactor == 0
 
@@ -69,12 +116,12 @@ void JunebugSamplerAudioProcessorEditor::paint (juce::Graphics& g)
 
         for (int sample = 0; sample < waveForm.getNumSamples(); sample += scaleFactor)
         {
-            //only stretch the points we want to draw
-            auto scaled = juce::jmap<float>(buffer[sample], -1.0f, 1.0f, static_cast<float>(getHeight()), 0.0f);
+            //only stretch the points we want to draw - 
+            auto scaled = juce::jmap<float>(buffer[sample], -1.0f, 1.0f, static_cast<float>(getHeight()/2), 0.0f);
             drawPoints.push_back(scaled);
         }
 
-        p.startNewSubPath(0, getHeight() / 2);
+        p.startNewSubPath(0, (getHeight()  / 2) - getHeight()/4);
 
         for (int sample = 0; sample < drawPoints.size(); sample++)
         {
@@ -128,11 +175,16 @@ void JunebugSamplerAudioProcessorEditor::resized()
     // This is generally where you'll want to lay out the positions of any
     // subcomponents in your editor..
     //loadButton.setBounds(getWidth() / 2 - 50, getHeight() / 2 - 50, 100, 100);
-    
-    attackSlider.setBoundsRelative(0.5f,0.5f,0.1f,0.4f);
-    decaySlider.setBoundsRelative(0.55f, 0.5f, 0.1f, 0.4f);
-    sustainSlider.setBoundsRelative(0.6f, 0.5f, 0.1f, 0.4f);
-    releaseSlider.setBoundsRelative(0.65f, 0.5f, 0.1f, 0.4f);
+    const auto startX = 0.6;
+    const auto xOff = 0.1f;
+    const auto startY = 0.8f;
+    const auto width = 0.1f;
+    const auto height = 0.2f;
+
+    attackSlider.setBoundsRelative(startX,startY,width,height);
+    decaySlider.setBoundsRelative(startX + xOff, startY, width, height);
+    sustainSlider.setBoundsRelative(startX + 2 * xOff, startY, width, height);
+    releaseSlider.setBoundsRelative(startX + 3 * xOff, startY, width, height);
 }
 
 bool JunebugSamplerAudioProcessorEditor::isInterestedInFileDrag(const juce::StringArray& files)
@@ -168,3 +220,26 @@ void JunebugSamplerAudioProcessorEditor::filesDropped(const juce::StringArray& f
     repaint();
 
 }
+
+//void JunebugSamplerAudioProcessorEditor::sliderValueChanged(juce::Slider* slider)
+//{
+//    //a slider value has been changed! Which one is it? and what do we do with the changes? 
+//    if (slider == &attackSlider)
+//    {
+//        audioProcessor.getADSRParams().attack = attackSlider.getValue();
+//    }
+//    else if (slider == &decaySlider)
+//    {
+//        audioProcessor.getADSRParams().decay = decaySlider.getValue();
+//    }
+//    else if (slider == &sustainSlider)
+//    {
+//        audioProcessor.getADSRParams().sustain = sustainSlider.getValue();
+//    }
+//    else if(slider == &releaseSlider)
+//    {
+//        audioProcessor.getADSRParams().release = releaseSlider.getValue();
+//    }
+//
+//    audioProcessor.updateADSR();
+//}
