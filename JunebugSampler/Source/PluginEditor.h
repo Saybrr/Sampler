@@ -11,6 +11,7 @@
 #include <JuceHeader.h>
 #include "PluginProcessor.h"
 #include "WaveThumbnail.h"
+#include "EnvelopeComponent.h"
 //==============================================================================
 /**
 */
@@ -34,21 +35,13 @@ public:
     //void sliderValueChanged(juce::Slider* slider) override;
 
 private:
-    juce::TextButton loadButton{ "Load Sample" };
+ 
     // This reference is provided as a quick way for your editor to
     // access the processor object that created it.
     JunebugSamplerAudioProcessor& audioProcessor;
 
     WaveThumbnail waveThumb;
-
-    //Sliders for ADSR
-    juce::Slider attackSlider, decaySlider, sustainSlider, releaseSlider;
-    juce::Label attackLabel, decayLabel, sustainLabel, releaseLabel;
-
-    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> attackAttachment;
-    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> decayAttachment;
-    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> sustainAttachment;
-    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> releaseAttachment;
+    EnvelopeComponent envComp;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (JunebugSamplerAudioProcessorEditor)
 };

@@ -12,79 +12,18 @@
 
 //==============================================================================
 JunebugSamplerAudioProcessorEditor::JunebugSamplerAudioProcessorEditor (JunebugSamplerAudioProcessor& p)
-    : AudioProcessorEditor (&p), audioProcessor (p), waveThumb(p)
+    : AudioProcessorEditor (&p), audioProcessor (p), waveThumb(p), envComp(p)
 {
     // Make sure that before the constructor has finished, you've set the
     // editor's size to whatever you need it to be.
-    loadButton.onClick = [&]() {audioProcessor.loadFile(); };
-    addAndMakeVisible(loadButton);
+   
     
-    //----------------SLIDERS AND LABELS------------------------------------
-    //atk slider
-    attackSlider.setSliderStyle(juce::Slider::SliderStyle::RotaryVerticalDrag);
-    attackSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 40, 20);
-    attackSlider.setColour(juce::Slider::ColourIds::thumbColourId, juce::Colours::orange);
-    addAndMakeVisible(attackSlider);
-    //attackSlider.setRange(0.0f, 5.0f,0.01f);
-    //attackSlider.addListener(this);
-    attackAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>
-                                         (audioProcessor.getAPVTS(), "ATTACK", attackSlider); 
-    //atk label
-    attackLabel.setFont(10.0f);
-    attackLabel.setText("Attack", juce::NotificationType::dontSendNotification);
-    attackLabel.setJustificationType(juce::Justification::centredTop);
-    attackLabel.attachToComponent(&attackSlider,false);
-
-    //dec slider
-    decaySlider.setSliderStyle(juce::Slider::SliderStyle::RotaryVerticalDrag);
-    decaySlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 40, 20);
-    decaySlider.setColour(juce::Slider::ColourIds::thumbColourId, juce::Colours::orange);
-    addAndMakeVisible(decaySlider);
-    //decaySlider.setRange(0.0f, 5.0f, 0.01f);
-    //decaySlider.addListener(this);
-    decayAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>
-                                          (audioProcessor.getAPVTS(), "DECAY", decaySlider);
-    //dec label
-    decayLabel.setFont(10.0f);
-    decayLabel.setText("Decay",juce::NotificationType::dontSendNotification);
-    decayLabel.setJustificationType(juce::Justification::centredTop);
-    decayLabel.attachToComponent(&decaySlider, false);
-
-    //sus slider
-    sustainSlider.setSliderStyle(juce::Slider::SliderStyle::RotaryVerticalDrag);
-    sustainSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 40, 20);
-    sustainSlider.setColour(juce::Slider::ColourIds::thumbColourId, juce::Colours::orange);
-    addAndMakeVisible(sustainSlider);
-    //sustainSlider.addListener(this);
-    //sustainSlider.setRange(0.0f, 1.0f, 0.01f);
-
-    sustainAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>
-                                        (audioProcessor.getAPVTS(), "SUSTAIN", sustainSlider);
-    //sus label
-    sustainLabel.setFont(10.0f);
-    sustainLabel.setText("Sustain", juce::NotificationType::dontSendNotification);
-    sustainLabel.setJustificationType(juce::Justification::centredTop);
-    sustainLabel.attachToComponent(&sustainSlider, false);
-
-
-    //rel slider
-    releaseSlider.setSliderStyle(juce::Slider::SliderStyle::RotaryVerticalDrag);
-    releaseSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 40, 20);
-    releaseSlider.setColour(juce::Slider::ColourIds::thumbColourId, juce::Colours::orange);
-    addAndMakeVisible(releaseSlider);
-    //releaseSlider.addListener(this);
-    //releaseSlider.setRange(0.0f, 1.0f, 0.01f);
-
-    releaseAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>
-                                          (audioProcessor.getAPVTS(), "RELEASE", releaseSlider);
-    //rel label
-    releaseLabel.setFont(10.0f);
-    releaseLabel.setText("Release", juce::NotificationType::dontSendNotification);
-    releaseLabel.setJustificationType(juce::Justification::centredTop);
-    releaseLabel.attachToComponent(&releaseSlider, false);
     //-----------------------------------------------------------------
     //---------------------WAVE THUMBNAIL-----------------------------
     addAndMakeVisible(waveThumb);
+    //-----------------------------------------------------------------
+    //---------------------ENVELOPE SLIDERS---------------------------
+    addAndMakeVisible(envComp);
 
     setSize(600, 400);
 }
@@ -142,17 +81,8 @@ void JunebugSamplerAudioProcessorEditor::paint (juce::Graphics& g)
 void JunebugSamplerAudioProcessorEditor::resized()
 {
     waveThumb.setBoundsRelative(0.0f, 0.25f, 1.0f, 0.5f);
+    envComp.setBoundsRelative(0.0f, 0.75f, 1.0f, 0.25f);
 
-    const auto startX = 0.6;
-    const auto xOff = 0.1f;
-    const auto startY = 0.8f;
-    const auto width = 0.1f;
-    const auto height = 0.2f;
-
-    attackSlider.setBoundsRelative(startX,startY,width,height);
-    decaySlider.setBoundsRelative(startX + xOff, startY, width, height);
-    sustainSlider.setBoundsRelative(startX + 2 * xOff, startY, width, height);
-    releaseSlider.setBoundsRelative(startX + 3 * xOff, startY, width, height);
 }
 
 
