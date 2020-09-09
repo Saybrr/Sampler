@@ -15,7 +15,8 @@
 //==============================================================================
 /**
 */
-class JunebugSamplerAudioProcessorEditor : public juce::AudioProcessorEditor 
+class JunebugSamplerAudioProcessorEditor : public juce::AudioProcessorEditor,
+                                           public juce::Timer
                                      
                                            //public juce::Slider::Listener
 {
@@ -26,6 +27,8 @@ public:
     //==============================================================================
     void paint (juce::Graphics&) override;
     void resized() override;
+
+    void timerCallback() override;
 
     //FileDragAndDropTarget 
   /*  bool isInterestedInFileDrag(const juce::StringArray& files) override;

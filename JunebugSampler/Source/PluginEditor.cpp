@@ -24,12 +24,13 @@ JunebugSamplerAudioProcessorEditor::JunebugSamplerAudioProcessorEditor (JunebugS
     //-----------------------------------------------------------------
     //---------------------ENVELOPE SLIDERS---------------------------
     addAndMakeVisible(envComp);
-
+    startTimerHz(60);
     setSize(600, 400);
 }
 
 JunebugSamplerAudioProcessorEditor::~JunebugSamplerAudioProcessorEditor()
 {
+    stopTimer();
 }
 
 //==============================================================================
@@ -49,32 +50,13 @@ void JunebugSamplerAudioProcessorEditor::paint (juce::Graphics& g)
         //DRAW TEXT 
 
         g.setColour(juce::Colours::white);
-        g.setFont(15.0f);
-        //g.drawText("Sound(s) Loaded", getWidth() / 2 - 50, getHeight() / 2 - 10, getWidth(), 20, juce::Justification::left, false);
-        ////list names of sample(s) loaded
-        //int offset = 15;
-        //for (auto sample : audioProcessor.samplenames)
-        //{
-        //    auto basename = sample.fromLastOccurrenceOf("\\", false, true);
-        //    g.drawText(basename, getWidth() / 2 - 50, getHeight() / 2 - 10 + offset, getWidth(), 20, juce::Justification::left, false);
-        //    offset += 15;
-        //}
-
-        //std::string base_filename = path.substr(path.find_last_of("/\\") + 1)
-        //https://stackoverflow.com/questions/8520560/get-a-file-name-from-a-path
-
-
-         
+        g.setFont(15.0f);   
 
     }
     else
     {
         g.drawText("Load a Sound", getWidth() / 2 - 50, getHeight() / 2 - 10, 100, 20, juce::Justification::centred);
     }
-    //g.setColour (juce::Colours::white);
-    //g.setFont (15.0f);
-    //g.drawFittedText ("Hello World!", getLocalBounds(), juce::Justification::centred, 1);
-
 
 }
 
@@ -83,6 +65,12 @@ void JunebugSamplerAudioProcessorEditor::resized()
     waveThumb.setBoundsRelative(0.0f, 0.25f, 1.0f, 0.5f);
     envComp.setBoundsRelative(0.0f, 0.75f, 1.0f, 0.25f);
 
+}
+
+void JunebugSamplerAudioProcessorEditor::timerCallback()
+{
+    //we are using the timer to repaint at a set interval to draw the playhead
+    repaint();
 }
 
 

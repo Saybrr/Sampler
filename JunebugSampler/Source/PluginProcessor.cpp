@@ -142,17 +142,46 @@ bool JunebugSamplerAudioProcessor::isBusesLayoutSupported (const BusesLayout& la
 
 void JunebugSamplerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages)
 {
+
     juce::ScopedNoDenormals noDenormals;
     auto totalNumInputChannels  = getTotalNumInputChannels();
     auto totalNumOutputChannels = getTotalNumOutputChannels();
 
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
+
+
     if (shouldUpdate)
     {
         updateADSR();
     }
     
+    //-------------------PLAYHEAD LOGIC ---------------------
+    //Here we increment an int by the number of samples we have played
+    //this will be the position of the playhead in the sample
+    //we do this by reading what we are playing via midi messages
+    //1. Iterate through midi buffer
+    juce::MidiMessage m;
+    juce::MidiBuffer::Iterator it{ midiMessages };
+    int sample;
+    while (it.getNextEvent(m, sample))
+    {
+        //2. get mnessage on press and release
+        if (m.isNoteOn()) 
+        {
+            //start playhead
+            isNotePlayed = true;
+        }
+        else if (m.isNoteOff())
+        {
+            //stop playhead
+            isNotePlayed = false;
+            samplePlayedCount = 0;
+        }
+        //if we have played a note, increase the sample count by the amount that we have played 
+        samplePlayedCount = isNotePlayed ? sample : 0;
+    }
+    //-------------------------------------------------------
 
     sampler.renderNextBlock(buffer, midiMessages, 0, buffer.getNumSamples());
 

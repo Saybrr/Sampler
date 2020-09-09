@@ -72,6 +72,8 @@ public:
     
     juce::AudioProcessorValueTreeState& getAPVTS() { return myAPVST; }
 
+    std::atomic<bool>& getIsNotePlayed() { return isNotePlayed; }
+    std::atomic<int>& getSamplePlayedCount() { return samplePlayedCount; }
 
 private:
     juce::Synthesiser sampler;
@@ -93,8 +95,10 @@ private:
     juce::AudioProcessorValueTreeState::ParameterLayout createParameters();
 
     void valueTreePropertyChanged(juce::ValueTree& treeWhosePropertyHasChanged, const juce::Identifier& property);
-
+    
     std::atomic<bool> shouldUpdate{ false };
+    std::atomic<bool> isNotePlayed{ false }; 
+    std::atomic<int> samplePlayedCount{ 0 };
    
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (JunebugSamplerAudioProcessor)

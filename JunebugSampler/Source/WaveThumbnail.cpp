@@ -27,7 +27,7 @@ void WaveThumbnail::paint (juce::Graphics& g)
 {
     g.fillAll(getLookAndFeel().findColour(juce::ResizableWindow::backgroundColourId));
 
-    if (needRepaint) {
+    if (audioProcessor.getWaveForm().getNumSamples() > 0) {
         //our Path object used to draw the waveform
         juce::Path p;
         drawPoints.clear();
@@ -67,13 +67,28 @@ void WaveThumbnail::paint (juce::Graphics& g)
         auto nameBounds = getLocalBounds().reduced(10, 10);
         g.drawFittedText(fileName, nameBounds, juce::Justification::topRight, 1);
 
+        //----------------------PLAYHEAD DRAWING------------------------------------
+        //map num samples to the width of our screen via jmap
+        //draw a line at the current sample we are playing
+        if (audioProcessor.getSamplePlayedCount() > 0) 
+        {
+           // DBG(audioProcessor.getSamplePlayedCount());
+            auto playHeadPosition = juce::jmap<int>(audioProcessor.getSamplePlayedCount(), 0, audioProcessor.getWaveForm().getNumSamples(), 0, getWidth());
+            DBG("Playhead Pos: "<< playHeadPosition<< " Width: " << getWidth() << " TotalSamples: " << audioProcessor.getWaveForm().getNumSamples());
+            g.setColour(juce::Colours::white);
+            //note: locations are relative to component as we are in a child component of editor
+            g.drawLine(playHeadPosition, 0, playHeadPosition, getHeight(), 2.0f);
+        }
+
+        //------------------------------------------------------------------------
+        //needRepaint = false;
     }
     else
     {
         g.setColour(juce::Colours::white);
         g.drawFittedText("Drag and drop a Sample!", getLocalBounds(), juce::Justification::centred, 1);
     }
-    needRepaint = false;
+    
 }
 
 void WaveThumbnail::resized()
@@ -105,7 +120,7 @@ void WaveThumbnail::filesDropped(const juce::StringArray & files, int x, int y)
         if (isInterestedInFileDrag(files))
         {
             //load the file from an absolute path
-            needRepaint = true;
+            //needRepaint = true;
             auto myFile = std::make_unique<juce::File>(file);
             fileName = myFile->getFileNameWithoutExtension();
             audioProcessor.loadFile(file);
