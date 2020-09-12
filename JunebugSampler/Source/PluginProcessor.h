@@ -75,6 +75,12 @@ public:
     std::atomic<bool>& getIsNotePlayed() { return isNotePlayed; }
     std::atomic<int>& getSamplePlayedCount() { return samplePlayedCount; }
 
+    void setStartPos(int x) { startPos = x; }
+    void setEndPos(int x) { startPos = x; }
+
+    std::atomic<int>& getStartPos() { return startPos; }
+    std::atomic<int>& getEndPos() { return endPos; }
+
 private:
     juce::Synthesiser sampler;
     const int numVoices{ 3 };
@@ -84,6 +90,7 @@ private:
     //buffer we use to draw a visual representation of our sample
     //TODO: use this for amplitude splicing? 
     juce::AudioBuffer<float> waveForm;
+    juce::AudioBuffer<float> slice;
 
     juce::AudioFormatManager formatManager;
     //each file gets its own reader, so we want to just store a pointer
@@ -99,6 +106,9 @@ private:
     std::atomic<bool> shouldUpdate{ false };
     std::atomic<bool> isNotePlayed{ false }; 
     std::atomic<int> samplePlayedCount{ 0 };
+
+    std::atomic<int> startPos{ 0 };
+    std::atomic<int> endPos{ 0 };
    
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (JunebugSamplerAudioProcessor)

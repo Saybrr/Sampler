@@ -90,8 +90,8 @@ int JunebugSamplerAudioProcessor::getCurrentProgram()
 }
 
 void JunebugSamplerAudioProcessor::setCurrentProgram (int index)
-{
 }
+{
 
 const juce::String JunebugSamplerAudioProcessor::getProgramName (int index)
 {
@@ -179,12 +179,24 @@ void JunebugSamplerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffe
             samplePlayedCount = 0;
         }
         //if we have played a note, increase the sample count by the amount that we have played 
-        samplePlayedCount = isNotePlayed ? sample : 0;
+        
     }
+    samplePlayedCount = isNotePlayed ? samplePlayedCount += buffer.getNumSamples() : 0;
     //-------------------------------------------------------
-
-    sampler.renderNextBlock(buffer, midiMessages, 0, buffer.getNumSamples());
-
+    //-----------------START/END SELECTION LOGIC-------------
+    //slice buffer between start and end 
+    if ((startPos > 0 ) && (endPos > 0)) 
+    {
+        juce::AudioBuffer<float> slice;
+        juce::AudioSampleBuffer 
+        slice.copyFrom(0, startPos, , endPos - startPos);
+        sampler.renderNextBlock(slice, midiMessages, startPos, slice.getNumSamples());
+    }
+    else
+    {
+        //start and end have not beenchanged by user, play whole sample 
+        sampler.renderNextBlock(buffer, midiMessages, startPos, buffer.getNumSamples());
+    }
 //    
 //    for (int channel = 0; channel < totalNumInputChannels; ++channel)
 //    {
@@ -253,7 +265,7 @@ void JunebugSamplerAudioProcessor::loadFile(const juce::String& path)
 
     //iterate through the audio buffer via a pointer
     auto buffer = waveForm.getReadPointer(0);
-
+    
 
     //for (int sample = 0; sample < waveForm.getNumSamples(); sample++)
     //{

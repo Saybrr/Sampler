@@ -25,8 +25,8 @@
   <EXPORTFORMATS>
     <VS2019 targetFolder="Builds/VisualStudio2019">
       <CONFIGURATIONS>
-        <CONFIGURATION isDebug="1" name="Debug" targetName="JunebugSampler" binaryPath="C:\Users\saybe\Documents\AudioSoftware"/>
-        <CONFIGURATION name="Release" targetName="JunebugSampler" binaryPath="C:\Users\saybe\Documents\AudioSoftware"
+        <CONFIGURATION isDebug="1" name="Debug" targetName="JunebugSampler" binaryPath="C:\Users\Helazo\Documents\GitHub\Sampler\JunebugSampler"/>
+        <CONFIGURATION name="Release" targetName="JunebugSampler" binaryPath="C:\Users\Helazo\Documents\GitHub\Sampler\JunebugSampler"
                        enablePluginBinaryCopyStep="1" vst3BinaryLocation="C:\Program Files\Common Files\VST3\Junebug"/>
       </CONFIGURATIONS>
       <MODULEPATHS>

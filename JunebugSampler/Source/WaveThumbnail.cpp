@@ -67,6 +67,26 @@ void WaveThumbnail::paint (juce::Graphics& g)
         auto nameBounds = getLocalBounds().reduced(10, 10);
         g.drawFittedText(fileName, nameBounds, juce::Justification::topRight, 1);
 
+        //----------------------SELECTION RECTANGLE--------------------------------
+        //TODO: IF reDrawRect, draw from start to current mouse x pos 
+        if (reDrawRect)
+        {
+            g.setColour(juce::Colours::lightgreen);
+            g.setOpacity(0.4f);
+            int width = endPos - startPos;
+            g.drawRect(startPos, 0, (width > 0) ? width : 1, getHeight());
+            reDrawRect = false;
+        }
+        if (finalRect)
+        {
+            int width = endPos - startPos;
+            g.drawRect(startPos, 0, (width > 0) ? width : 1, getHeight());
+        }   
+        g.drawFittedText(static_cast<juce::String>(startPos), getLocalBounds().reduced(20, 50), juce::Justification::topRight, 1);
+        g.drawFittedText(static_cast<juce::String>(audioProcessor.getStartPos()), getLocalBounds().reduced(20, 70), juce::Justification::topRight, 1);
+        g.drawFittedText(static_cast<juce::String>(endPos), getLocalBounds().reduced(20, 20), juce::Justification::topRight, 1);
+        g.drawFittedText(static_cast<juce::String>(audioProcessor.getStartPos()), getLocalBounds().reduced(20, 70), juce::Justification::topRight, 1);
+        //-------------------------------------------------------------------------
         //----------------------PLAYHEAD DRAWING------------------------------------
         //map num samples to the width of our screen via jmap
         //draw a line at the current sample we are playing
@@ -132,5 +152,37 @@ void WaveThumbnail::filesDropped(const juce::StringArray & files, int x, int y)
     audioProcessor.samplenames = files;
     repaint();
 
+}
+
+void WaveThumbnail::mouseDown(const juce::MouseEvent& event)
+{
+    //start pos = xpos
+    startPos = getMouseXYRelative().getX();
+    
+    auto mappedToSample = juce::jmap(startPos, 0, getWidth(), 0, audioProcessor.getWaveForm().getNumSamples());
+    audioProcessor.setStartPos(mappedToSample);
+    reDrawRect = true;
+    DBG("START POS: " << startPos << "START SAMPLE: " << mappedToSample);
+    repaint();
+}
+
+void WaveThumbnail::mouseDrag(const juce::MouseEvent& event)
+{
+    endPos = getMouseXYRelative().getX();
+    reDrawRect = true;
+    repaint();
+    DBG("DRAGGED TO: " << endPos);
+}
+
+void WaveThumbnail::mouseUp(const juce::MouseEvent& event)
+{
+    //end pos = xpos
+    endPos = getMouseXYRelative().getX();
+    auto mappedToSample = juce::jmap(endPos, 0, getWidth(), 0, audioProcessor.getWaveForm().getNumSamples());
+    audioProcessor.setEndPos(mappedToSample);
+    finalRect = true;
+    reDrawRect = false;
+    DBG("ENDED AT: " << endPos << "END SAMPLE: " << mappedToSample);
+    repaint();
 }
 
