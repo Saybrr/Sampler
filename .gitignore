@@ -1,4 +1,4 @@
 JunebugSampler/Builds
-JunebugSampler/Standalone Plugin
-JunebugSampler\VST3\*
+JunebugSampler/Standalone Plugin/*
+JunebugSampler/VST3/*
 Host
